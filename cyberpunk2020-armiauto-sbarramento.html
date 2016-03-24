@@ -1,0 +1,122 @@
+<html>
+<title>Armi Automatiche - Fuoco di Sbarramento</title>
+<head>
+  <meta charset="UTF-8">
+  <script>
+    // global variables
+    var x = 0;
+    var dist = 0;
+    var numPro = 0;
+    var numBers = 0;
+    var bersCorr = 1;
+
+    // functions
+    function d6(){
+      return Math.floor((Math.random() * 6) + 1);
+    }
+    function d10(){
+      return Math.floor((Math.random() * 10) + 1);
+    }
+
+    function cleanDanni(){
+      var element = document.getElementById('danni');
+      while(element.firstChild) {
+        element.removeChild(element.firstChild);
+      }
+      document.getElementById('numPro').innerHTML = "0";
+    }
+
+    function TiroSalvezza(){
+
+      var tiro = d10();
+      x = Number(document.getElementById("caratt").elements.namedItem('rif').value) + Number(document.getElementById("caratt").elements.namedItem('atl').value) + Number(tiro);
+      document.getElementById("TiroSalvezza").innerHTML = x ;
+      numBers = document.getElementById("caratt").elements.namedItem('bers').value;
+
+
+      document.getElementById('bersaglio').innerHTML = "Bersaglio #" + bersCorr;
+      if (bersCorr > numBers){
+        document.getElementById('bersaglio').innerHTML = "Bersagli Esauriti!";
+      }
+      bersCorr++;
+
+    }
+
+    function DanniFuocoSbarramento(){
+      var parteCorpo = ["","testa","tronco","tronco","tronco","braccio dx","braccio sx","gamba dx","gamba dx","gamba sx","gamba sx"];
+      for (i=0; i < numPro; i++){
+        var numDanni = Number(document.getElementById("caratt").elements.namedItem('danno1').value) * Number(d6()) + Number(document.getElementById("caratt").elements.namedItem('danno2').value);
+        var pdanni = document.createElement("p");
+        var node = document.createTextNode( numDanni + " danni a " + parteCorpo[d10()] );
+        pdanni.appendChild(node);
+
+        var element = document.getElementById('danni');
+        element.appendChild(pdanni);
+      }
+    }
+
+    function FuocoSbarramento(){
+
+      var colpisci = 0;
+      var cdf = Number(document.getElementById("caratt").elements.namedItem('cdf').value);
+      var amp = Number(document.getElementById("caratt").elements.namedItem('amp').value);
+      // se il tiro salvezza fallisce, colpisco
+      if (x <= Math.floor(cdf / amp) ){
+        colpisci = 1;
+        numPro = Number(d6());
+      } else {
+        document.getElementById('colp').innerHTML = "Non colpisci!"
+      }
+
+      //pulisci danni e numPro
+      cleanDanni();
+      //se si è colpito calcola dannni e scrive i proiettili a segno
+      if (colpisci == 1){
+        document.getElementById('colp').innerHTML = "Colpisci!";
+        document.getElementById('numPro').innerHTML = numPro;
+        DanniFuocoSbarramento();
+      } else {
+        document.getElementById('colp').innerHTML = "Non colpisci!"
+      }
+    }
+
+  </script>
+</head>
+
+<body>
+  <h1>Scheda Armi Automatiche - Fuoco di Sbarramento</h1>
+
+  <form id="caratt">
+    <h3>Riflessi del Bersaglio:<h3>
+    <input type="number" name="rif">
+    <h3>Atletica del Bersaglio:</h3>
+    <input type="number" name="atl">
+    <h3>Danno Arma</h3>
+    <input type="number" name="danno1"> D6 + <input type="number" name="danno2">
+    <h3>CDF Arma</h3>
+    <input type="Number" name="cdf">
+    <h3>Numero Bersagli:</h3>
+    <input type="Number" name="bers">
+    <h3>Ampiezza zona di fuoco:</h3>
+    <input type="number" name="amp">
+  </form>
+
+
+  <hr>
+
+  <h3 id="bersaglio">Bersaglio #0</h3>
+  <h3>Tiro Salvezza:</h3>
+  <p id="TiroSalvezza">0</p>
+  <button onclick="TiroSalvezza()">Genera</button>
+
+  <hr>
+  <h2>Fuoco di Sbarramento</h2>
+  <button onclick="FuocoSbarramento()">Spara</button>
+  <h3 id="colp">...</h3>
+  <h3>Numero proiettili a segno</h3>
+  <p id="numPro">0</p>
+  <h3>Danni:</h3>
+  <div id="danni"></div>
+
+</body>
+</html>

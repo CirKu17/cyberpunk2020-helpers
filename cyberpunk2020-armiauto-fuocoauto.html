@@ -1,0 +1,186 @@
+<html>
+<title>Armi Automatiche - Fuoco Automatico</title>
+<head>
+  <meta charset="UTF-8">
+  <script>
+    // global variables
+    var x = 0;
+    var dist = 0;
+    var numPro = 0;
+    var numBers = 0;
+    var bersCorr = 1;
+
+    var pnode
+
+    // functions
+    function d6(){
+      return Math.floor((Math.random() * 6) + 1);
+    }
+    function d10(){
+      return Math.floor((Math.random() * 10) + 1);
+    }
+    function aSegno(){
+      return Math.floor( x - 10 );
+    }
+
+    function cleanDanni(){
+      var element = document.getElementById('danni');
+      while(element.firstChild) {
+        element.removeChild(element.firstChild);
+      }
+      document.getElementById('numPro').innerHTML = "0";
+    }
+
+    function TiroPerColpire(){
+
+      var tiro = d10();
+      x = Number(document.getElementById("caratt").elements.namedItem('rif').value) + Number(document.getElementById("caratt").elements.namedItem('abiArm').value) + Number(tiro);
+      document.getElementById("TiroPerColpire").innerHTML = x ;
+      dist = document.getElementById('dist').options.selectedIndex;
+      numBers = document.getElementById("caratt").elements.namedItem('bers').value;
+      // adatto la cdf per più bersagli
+      var cdfBersaglio = Math.floor(Number(document.getElementById("caratt").elements.namedItem('cdf').value) / Number(numBers) );
+      // modifica il tiro per colpire a seconda della distanza
+      var bonusDistanza = Math.floor( cdfBersaglio / 10);
+      if (dist == 1) {
+        x = x + bonusDistanza;
+        document.getElementById("TiroPerColpire").innerHTML = x ;
+      } else if (dist == 2 || dist == 3 || dist == 4) {
+        x = x - bonusDistanza;
+        document.getElementById("TiroPerColpire").innerHTML = x ;
+      }
+      //determina se critico o maldestro
+      document.getElementById('crit').innerHTML = "No";
+      document.getElementById('mald').innerHTML = "No";
+      if (tiro == 10) {
+        document.getElementById('crit').innerHTML = "Sì";
+        x = x + Number(d10());
+        document.getElementById("TiroPerColpire").innerHTML = x ;
+      } else if(tiro == 1) {
+        document.getElementById('mald').innerHTML = "Sì";
+      }
+
+
+      document.getElementById('bersaglio').innerHTML = "Bersaglio #" + bersCorr;
+      if (bersCorr > numBers){
+        document.getElementById('bersaglio').innerHTML = "Bersagli Esauriti!";
+      }
+      bersCorr++;
+
+
+    }
+
+    function DanniFuocoAutomatico(){
+      var parteCorpo = ["","testa","tronco","tronco","tronco","braccio dx","braccio sx","gamba dx","gamba dx","gamba sx","gamba sx"];
+      for (i=0; i < numPro; i++){
+        var numDanni = Number(document.getElementById("caratt").elements.namedItem('danno1').value) * Number(d6()) + Number(document.getElementById("caratt").elements.namedItem('danno2').value);
+        var pdanni = document.createElement("p");
+        var node = document.createTextNode( numDanni + " danni a " + parteCorpo[d10()] );
+        pdanni.appendChild(node);
+
+        var element = document.getElementById('danni');
+        element.appendChild(pdanni);
+      }
+    }
+
+    function FuocoAutomatico(){
+
+      var colpisci = 0;
+
+      if (dist == 0){
+        //bruciapelo
+        if(x >= 10 ){
+          colpisci = 1;
+          numPro = x - 10;
+        }
+      } else if (dist == 1){
+        //ravvicinata
+        if(x >=15){
+          colpisci = 1;
+          numPro = x - 15
+        }
+      } else if (dist == 2){
+        //media
+        if(x >= 20){
+          colpisci = 1;
+          numPro = x - 20;
+        }
+      } else if (dist == 3){
+        //lunga
+        if(x >= 25){
+          colpisci = 1;
+          numPro = x - 25;
+        }
+      } else if (dist == 4 && x>=30){
+        //massima
+        if(x >=30){
+          colpisci = 1;
+          numPro = x -30;
+        }
+      } else {
+        document.getElementById('colp').innerHTML = "Non colpisci!"
+      }
+
+      //pulisci danni e numPro
+      cleanDanni();
+      //se si è colpito calcola dannni e scrive i proiettili a segno
+      if (colpisci == 1){
+        document.getElementById('colp').innerHTML = "Colpisci!";
+        document.getElementById('numPro').innerHTML = numPro;
+        DanniFuocoAutomatico();
+      } else {
+        document.getElementById('colp').innerHTML = "Non colpisci!"
+      }
+    }
+
+  </script>
+</head>
+
+<body>
+  <h1>Scheda Armi Automatiche - Fuoco Automatico</h1>
+
+  <form id="caratt">
+    <h3>Riflessi:<h3>
+    <input type="number" name="rif">
+    <h3>Abilità Arma:</h3>
+    <input type="number" name="abiArm">
+    <h3>Danno Arma</h3>
+    <input type="number" name="danno1"> D6 + <input type="number" name="danno2">
+    <h3>CDF Arma</h3>
+    <input type="Number" name="cdf">
+    <h3>Numero Bersagli:</h3>
+    <input type="Number" name="bers">
+  </form>
+
+  <h3>Distanza:</h3>
+  <select id="dist">
+    <option value="bru">Bruciapelo</option>
+    <option value="rav">Ravvicinata</option>
+    <option value="med">Media</option>
+    <option value="lun">Lunga</option>
+    <option value="max">Massima</option>
+  </select>
+
+  <hr>
+
+  <h3 id="bersaglio">Bersaglio #0</h3>
+  <h3>Tiro per colpire:</h3>
+  <p id="TiroPerColpire">0</p>
+  <button onclick="TiroPerColpire()">Genera</button>
+
+  <h3>Critico</h3>
+  <p id="crit">No</p>
+  <h3>Maldestro</h3>
+  <p id="mald">No</p>
+
+  <hr>
+  <h2>Fuoco Automatico</h2>
+  <button onclick="FuocoAutomatico()">Spara</button>
+  <h3 id="colp">...</h3>
+  <h3>Numero proiettili a segno</h3>
+  <p id="numPro">0</p>
+  <h3>Danni:</h3>
+  <div id="danni"></div>
+
+</body>
+</html>
